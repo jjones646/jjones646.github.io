@@ -1,0 +1,31 @@
+<html>
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+<script src="scripts.js"></script>
+<script src="../ws-srv/msg.js"></script>
+<style>
+#pointer-div {
+    background-image: url("gt-aerial-crop.jpg");
+    background-size: contain;
+    background-repeat: no-repeat;
+    max-width: 3188px;
+    max-height: 2072px;
+    height: 1000px;
+}
+</style>
+</head>
+<body>
+<form name="pointform" method="post">
+<div id="pointer-div" onclick="pointIt(event)">
+<div class="tags">
+<img src="marker.png" class="marker" style="position:relative;visibility:hidden;z-index:2;">
+</div>
+</div>
+Current Point:<br>x = <input type="text" id="form_x" size="4" /></br>y = <input type="text" id="form_y" size="4" /></br>
+<input type="button" id="submit-btn" value="Submit" />
+</form>
+<div id="num-users">
+1
+</div>
+</body>
+</html>
