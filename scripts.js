@@ -57,7 +57,7 @@ window.onload = function() {
   } else {
 
     // setup the websocket connection
-    var wsurl = "ws://localhost:5000";
+    var wsurl = "ws://104.131.13.159:5000";
     //get status element
     var connstatus = document.getElementById("connectionstatus");
     var submitBtn = document.getElementById('submit-btn');
