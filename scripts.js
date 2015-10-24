@@ -47,7 +47,7 @@ function encLoc(x, y) {
 }
 
 function clearTags() {
-
+  $('div.atags').remove()
 }
 
 window.onload = function() {
@@ -118,6 +118,11 @@ window.onload = function() {
             case "renew_num_clients":
               $('#num-users').text(msg.data);
               console.log("Updating number of users");
+              break;
+
+            case "clear_points":
+              clearTags();
+              console.log("Clearing current points.");
               break;
 
             default:
