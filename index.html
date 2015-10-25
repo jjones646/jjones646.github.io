@@ -1,33 +1,46 @@
 <html>
+
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
-<link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
-
-<div class="height-wrap">
-<div id="point-wrap">
-<img src="gt-aerial-crop.jpg" alt="GT Aerial View" >
-<div class="tags">
-<i class="fa fa-circle fa-fw marker mark"></i>
-</div>
-</div>
-</div>
-<form name="pointform" method="post">
-Current Point:<br>x = <input type="text" id="form_x" size="4" /></br>y = <input type="text" id="form_y" size="4" /></br>
-<input type="button" id="submit-btn" value="Submit" />
-</form>
-
-<div id="connstatus">
-<i class="fa fa-circle"> Not Connected</i>
-<div id="num-users"><i class="fa fa-user"></i></div>
-</div>
-
-<footer>
-<script src="msg.js"></script>
-<script src="scripts.js"></script>
-</footer>
+    <div class="align">
+        <div class="align-item align-top">
+            <div class="height-wrap">
+                <div id="point-wrap">
+                    <img src="gt-aerial-crop.jpg" alt="GT Aerial View">
+                    <div class="tags">
+                        <i class="fa fa-circle fa-fw fa-3x marker mark"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="align">
+        <div class="align-item align-bottom">
+            <form name="pointform" method="post">
+                Current Point:
+                <br>x =
+                <input type="text" id="form_x" size="4" />
+                </br>y =
+                <input type="text" id="form_y" size="4" />
+                </br>
+                <input type="button" id="submit-btn" value="Submit" />
+            </form>
+            <div id="connstatus">
+                <i class="fa fa-circle"> Not Connected</i>
+                <div id="num-users"><i class="fa fa-user"></i></div>
+            </div>
+        </div>
+    </div>
+    <footer>
+        <script src="msg.js"></script>
+        <script src="scripts.js"></script>
+    </footer>
 </body>
+
 </html>

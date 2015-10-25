@@ -1,56 +1,81 @@
-
-
 #point-wrap {
-    /*background-image: url("gt-aerial-crop.jpg");*/
-    /*background-size: cover;*/
-    /*background-repeat: no-repeat;*/
-
-    /*max-width: 3188px;*/
-    /*max-height: 2072px;*/
-    /*height: 100%;*/
-    width: 100%;
-    /*filter: brightness(50%);*/
     position: relative;
     -webkit-filter: brightness(150%);
 }
 
 .height-wrap {
-	overflow: scroll;
-	height: 100%;
+    overflow: scroll;
+    /*height: 80%;*/
+}
+
+.align {
+    display: -webkit-box;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: -webkit-flex;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: row;
+}
+
+.align > * {
+    flex: 1 100%;
+}
+
+.align-bottom {
+    align-self: flex-end;
+}
+
+.align-top {
+    align-self: flex-start;
 }
 
 i .fa {
-	text-shadow: 0 0 3px #FFFAF0;
-	position: absolute;
+    text-shadow: 0 0 3px #FFFAF0;
+    position: absolute;
+    /*vertical-align: middle;*/
+    /*text-align: center;*/
+    /*vertical-align: bottom;*/
 }
 
 #num-users > .fa-user {
-	color: #0000CC;
+    color: #0000CC;
 }
 
 img {
-	display: block;
+    display: block;
+    margin: 0;
+    padding: 0;
 }
 
 div .tags {
-	display: block;
-
+    visibility: hidden;
+    position: absolute;
 }
 
-/* Connection status indicator gets */
-/* updated in the js on connection opening. */
+
+/* Connection status indicator gets
+ * updated in the js on connection opening. */
+
 #connstatus > i {
-	color: red;
+    color: red;
 }
 
 div > .marker {
-	text-shadow: 0 0 3px #FFFAF0;
+    text-shadow: 0 0 3px #FFFAF0;
 }
 
 .marked {
-	color: #32CD32;
+    color: #32CD32;
 }
 
 .mark {
-	color: #1E90FF;
+    color: #1E90FF;
+}
+
+footer {
+    position: absolute;
+    width: 100%;
+    height: 100%;
 }

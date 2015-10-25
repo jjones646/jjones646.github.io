@@ -1,26 +1,34 @@
 var isFree = true;
 var attempts = 1;
+var image_set = 0;
 
-jQuery.fn.extend({
-  encode: function(x, y) {
-    var dims = {
-      x: "",
-      y: ""
-    };
-    dims.x = Math.round((x / $(this).width()) * 1000);
-    dims.y = Math.round((y / $(this).height()) * 1000);
-    return dims;
-  },
-  decode: function(x, y) {
-    var dims = {
-      left: "",
-      top: ""
-    };
-    dims.left = Math.round((x * $(this).width()) / 1000);
-    dims.top = Math.round((y * $(this).height()) / 1000);
-    return dims;
+function placePoint(x, y) {
+  var aTags = $('div.tags');
+  // create the atags div if it doesn't exist
+  if (!aTags.find('div.atags').length) {
+    aTags.append('<div></div>');
+    aTags.find('div:last').addClass('atags');
   }
-});
+  // clone a placement marker
+  var rootTag = $('.marker:first');
+  rootTag.addClass('marker-user').clone().appendTo(aTags.find('div'));
+  rootTag.removeClass('marker-user');
+
+  // compute our offset for the correct placement
+  var offset = $('#point-wrap').position();
+  console.log(offset);
+  var imgB = document.getElementById('point-wrap');
+  var xx = Math.round(x - imgB.offsetLeft + offset.left);
+  var yy = Math.round(y - imgB.offsetTop + offset.top);
+
+  // set the offset for the point we just added
+  $('.marker-user:last').offset({
+    left: xx,
+    top: yy
+  });
+
+  $('.marker-user:last').css('visibility', 'visible');
+}
 
 function genInterval(k) {
   var maxInterval = (Math.pow(2, k) - 1) * 1000;
@@ -83,35 +91,19 @@ window.onload = function createWebSocket() {
               break;
 
             case "add_user_cords":
-              var aTags = $('div.tags');
-              // if this is the first addition, create the div wrapper for others
-              if (!aTags.find('div').length) {
-                aTags.append('<div></div>');
-                aTags.find('div').addClass('atags');
-              }
-              // clone a placement marker
-              var rootTag = $('.marker:first');
-              rootTag.addClass('marker-user').clone().appendTo(aTags.find('div'));
-              rootTag.removeClass('marker-user');
-
-              // compute our local placement dimensions
-              var dims = $('#point-wrap').decode(msg.data.cords.x, msg.data.cords.y);
-
-              // set the offset
-              $('.marker-user:last').offset(dims);
+              // // set the offset
+              placePoint(msg.data.cords.x, msg.data.cords.y);
+              // update the color
               $('.marker-user:last').css('color', 'red');
               $('.tags').hide().show();
-              console.log("Added coordinate to image.");
               break;
 
             case "renew_num_clients":
               $('#num-users').find('i.fa-user').text(' ' + msg.data + ' current users');
-              console.log("Updating number of users");
               break;
 
             case "clear_points":
               $('div.atags').remove()
-              console.log("Clearing current points.");
               break;
 
             default:
@@ -127,7 +119,6 @@ window.onload = function createWebSocket() {
         console.log(event.data);
 
       } catch (err) {
-        console.log(err);
         console.dir(err);
       }
     };
@@ -138,23 +129,18 @@ window.onload = function createWebSocket() {
       console.log('Connection closed with ' + wsurl);
     };
 
-
     submitBtn.onclick = function(e) {
-      var cord_x = document.getElementById("form_x").value;
-      var cord_y = document.getElementById("form_y").value;
-      var image_set = 1;
-
       // make sure we have valid coordinates to send
-      if (cord_x != null && cord_y != null) {
-        // check to see if the websocket object exists
-        $('.marker:first').css('color', 'green');
-
+      if ($('#form_x').val() != null && $('#form_y').val() != null) {
         if (webSock) {
-          // encode the dimensions for global normalization
-          var dims = $('#point-wrap').encode(cord_x, cord_y);
+          // check to see if the websocket object exists
+          $('.marker:first').css('color', '#00FF00');
           // create our data object to send
           var data = {
-            cords: dims,
+            cords: {
+              x: $('#form_x').val(),
+              y: $('#form_y').val()
+            },
             set: image_set
           };
           // construct a message object, placing the data as the payload
@@ -173,28 +159,29 @@ window.onload = function createWebSocket() {
     $('#point-wrap').click(function(e) {
       // e = e || window.event;
       // e = jQuery.event.fix(e);
+
+      // get the offset value that is hidden relative to the 
+      // top left corner of the image
+      var offset = $(this).position()
+      var imgB = document.getElementById('point-wrap');
+      // console.dir(imgB);
+      var x = Math.round(e.offsetX);
+      var y = Math.round(e.offsetY);
+      // update our value if we haven't already submitted
       if (isFree) {
-        var x = Math.round(e.offsetX);
-        var y = Math.round(e.offsetY);
         $('#form_x').val(x);
         $('#form_y').val(y);
+
+        var point = $('div.tags').find('.marker:first');
+        point.offset({
+          top: y + offset.top - imgB.offsetTop,
+          left: x + offset.left - imgB.offsetLeft
+        });
+        point.css('visibility', 'visible');
       }
-
-      var point = $('.marker:first');
-      // console.log(point.position());
-      point.offset({
-        top: y,
-        left: x
-      });
-
-      $('.tags').show();
-      console.dir($(this));
-      // console.log(e);
     });
 
     $('#point-wrap').mousemove(function(e) {
-      //   e = e || window.event;
-      //   e = jQuery.event.fix(e);
       // console.log('client: (' + e.clientX + ',' + e.clientY + ')\noffset: (' + e.offsetX + ',' + e.offsetY + ')\npage: (' + e.pageX + ',' + e.pageY + ')\nscreen: (' + e.screenX + ',' + e.screenY + ')\n');
     });
 
@@ -206,13 +193,20 @@ window.onload = function createWebSocket() {
       }
       // Spacebar
       if (e.which == 32) {
-        clearTags();
+        $('.atags').remove();
+        return false;
       }
-      // c or C
-      if (e.which == 99 || e.which == 67) {
-        //console.log('Opening connection to ' + wsurl);
+      // p or P
+      if (e.which == 80 || e.which == 112) {
+        for (i = 0; i < 200; ++i) {
+          var x = Math.floor(Math.random() * $('img').width());
+          var y = Math.floor(Math.random() * $('img').height());
+          $('#form_x').val(x);
+          $('#form_y').val(y);
+          placePoint(x, y);
+          $('#submit-btn').trigger("click");
+        }
       }
-      console.log('pressed ' + e.which);
     });
 
   }
