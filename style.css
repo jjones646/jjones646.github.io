@@ -1,0 +1,56 @@
+
+
+#point-wrap {
+    /*background-image: url("gt-aerial-crop.jpg");*/
+    /*background-size: cover;*/
+    /*background-repeat: no-repeat;*/
+
+    /*max-width: 3188px;*/
+    /*max-height: 2072px;*/
+    /*height: 100%;*/
+    width: 100%;
+    /*filter: brightness(50%);*/
+    /*position: absolute;*/
+    -webkit-filter: brightness(150%);
+}
+
+.height-wrap {
+	overflow: scroll;
+	height: 100%;
+}
+
+i .fa {
+	text-shadow: 0 0 3px #FFFAF0;
+	position: relative;
+}
+
+#num-users > .fa-user {
+	color: #0000CC;
+}
+
+img {
+	display: block;
+}
+
+div .tags {
+	display: block;
+
+}
+
+/* Connection status indicator gets */
+/* updated in the js on connection opening. */
+#connstatus > i {
+	color: red;
+}
+
+div > .marker {
+	text-shadow: 0 0 3px #FFFAF0;
+}
+
+.marked {
+	color: #32CD32;
+}
+
+.mark {
+	color: #1E90FF;
+}

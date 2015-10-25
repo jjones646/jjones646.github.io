@@ -1,56 +1,37 @@
 var isFree = true;
+var attempts = 1;
 
-function pointIt(event) {
-  if (isFree) {
-    var offsetPtr = $('#pointer-div').offset();
-    var pos_x = event.offsetX ? (event.offsetX + offsetPtr.left) : event.pageX - offsetPtr.left;
-    var pos_y = event.offsetY ? (event.offsetY + offsetPtr.top) : event.pageY - offsetPtr.top;
-    var mrkElem = $('.marker:first');
-    var offsetVal = mrkElem.width() / 2;
-    mrkElem.offset({
-      top: (pos_y - offsetVal),
-      left: (pos_x - offsetVal)
-    });
-    mrkElem.css("visibility", "");
-    $('#form_x').val(pos_x);
-    $('#form_y').val(pos_y);
+jQuery.fn.extend({
+  encode: function(x, y) {
+    var dims = {
+      x: "",
+      y: ""
+    };
+    dims.x = Math.round((x / $(this).width()) * 1000);
+    dims.y = Math.round((y / $(this).height()) * 1000);
+    return dims;
+  },
+  decode: function(x, y) {
+    var dims = {
+      left: "",
+      top: ""
+    };
+    dims.left = Math.round((x * $(this).width()) / 1000);
+    dims.top = Math.round((y * $(this).height()) / 1000);
+    return dims;
   }
+});
+
+function genInterval(k) {
+  var maxInterval = (Math.pow(2, k) - 1) * 1000;
+  if (maxInterval > 30 * 1000) {
+    maxInterval = 30 * 1000; // If the generated interval is more than 30 seconds, truncate it down to 30 seconds.
+  }
+  // generate the interval to a random number between 0 and the maxInterval determined from above
+  return Math.random() * maxInterval;
 }
 
-// Convert the normalized coordinates for the user's current display settings
-// normalized units are assumed to be in the range from 0 to 1000.
-function decLoc(x, y) {
-  var myW = $('#pointer-div').width();
-  var myH = $('#pointer-div').height();
-  var dims = {
-    x: "",
-    y: ""
-  };
-
-  dims.x = Math.round((x * myW) / 1000);
-  dims.y = Math.round((y * myH) / 1000);
-  return dims;
-}
-
-// encode the location before sending it over the websocket connection
-function encLoc(x, y) {
-  var myW = $('#pointer-div').width();
-  var myH = $('#pointer-div').height();
-  var dims = {
-    x: "",
-    y: ""
-  };
-
-  dims.x = Math.round((x / myW) * 1000);
-  dims.y = Math.round((y / myH) * 1000);
-  return dims;
-}
-
-function clearTags() {
-  $('div.atags').remove()
-}
-
-window.onload = function() {
+window.onload = function createWebSocket() {
   if (!window.WebSocket) {
     //If the user's browser does not support WebSockets, give an alert message
     alert("Your browser does not support the WebSocket API!");
@@ -58,9 +39,11 @@ window.onload = function() {
 
     // setup the websocket connection
     var wsurl = "ws://104.131.13.159:5000";
+    // var wsurl = "ws://localhost:5000";
     //get status element
-    var connstatus = document.getElementById("connectionstatus");
+    // var connstatus = document.getElementById('connstatus');
     var submitBtn = document.getElementById('submit-btn');
+    var clickArea = document.getElementById('point-wrap');
     // the default realm for our protocol
     var commRealm = 'robotics';
     // create the websocket object
@@ -69,11 +52,21 @@ window.onload = function() {
     // Handle any errors that occur.
     webSock.onerror = function(error) {
       console.log('WebSocket Error: ' + error);
+      console.dir(error);
+      var time = genInterval(attempts);
+      setTimeout(function() {
+        // We've tried to reconnect so increment the attempts by 1
+        attempts++;
+        // Connection has closed so try to reconnect every 10 seconds.
+        createWebSocket();
+      }, time);
     };
 
     webSock.onopen = function(event) {
       // do stuff when the connection opens
-      console.log(event);
+      attempts = 1;
+      $('#connstatus').find('i:first').css('color', 'green').text(' Connected');;
+      console.log('Connection opened with ' + wsurl);
     };
 
     webSock.onmessage = function(event) {
@@ -89,7 +82,6 @@ window.onload = function() {
           // handle the corresponding event
           switch (msg.proto) {
             case "submit_cords":
-              // not used client-side
               break;
 
             case "add_user_cords":
@@ -99,29 +91,28 @@ window.onload = function() {
                 aTags.append('<div></div>');
                 aTags.find('div').addClass('atags');
               }
-
               // clone a placement marker
               var rootTag = $('.marker:first');
               rootTag.addClass('marker-user').clone().appendTo(aTags.find('div'));
               rootTag.removeClass('marker-user');
 
               // compute our local placement dimensions
-              var dims = decLoc(msg.data.cords.x, msg.data.cords.y);
+              var dims = $('#point-wrap').decode(msg.data.cords.x, msg.data.cords.y);
+
               // set the offset
-              $('.marker-user:last').offset({
-                top: dims.y,
-                left: dims.x
-              });
+              $('.marker-user:last').offset(dims);
+              $('.marker-user:last').css('color', 'red');
+              $('.tags').hide().show();
               console.log("Added coordinate to image.");
               break;
 
             case "renew_num_clients":
-              $('#num-users').text(msg.data);
+              $('#num-users').find('i.fa-user').text(' ' + msg.data + ' current users');
               console.log("Updating number of users");
               break;
 
             case "clear_points":
-              clearTags();
+              $('div.atags').remove()
               console.log("Clearing current points.");
               break;
 
@@ -136,14 +127,19 @@ window.onload = function() {
           }
         }
         console.log(event.data);
+
       } catch (err) {
         console.log(err);
+        console.dir(err);
       }
     };
 
     webSock.onclose = function(event) {
       // do stuff when the connection closes
+      $('#connstatus').find('i.circle').css('color', 'red').text(' Not Connected');
+      console.log('Connection closed with ' + wsurl);
     };
+
 
     submitBtn.onclick = function(e) {
       var cord_x = document.getElementById("form_x").value;
@@ -153,9 +149,11 @@ window.onload = function() {
       // make sure we have valid coordinates to send
       if (cord_x != null && cord_y != null) {
         // check to see if the websocket object exists
+        $('.marker:first').css('color', 'green');
+
         if (webSock) {
           // encode the dimensions for global normalization
-          var dims = encLoc(cord_x, cord_y);
+          var dims = $('#point-wrap').encode(cord_x, cord_y);
           // create our data object to send
           var data = {
             cords: dims,
@@ -174,11 +172,49 @@ window.onload = function() {
       }
     };
 
+    $('#point-wrap').click(function(e) {
+      // e = e || window.event;
+      // e = jQuery.event.fix(e);
+      if (isFree) {
+        var x = Math.round(e.offsetX);
+        var y = Math.round(e.offsetY);
+        $('#form_x').val(x);
+        $('#form_y').val(y);
+      }
+
+      var point = $('.marker:first');
+      // console.log(point.position());
+      point.offset({
+        top: y,
+        left: x
+      });
+
+      $('.tags').show();
+      console.dir($(this));
+      // console.log(e);
+    });
+
+    $('#point-wrap').mousemove(function(e) {
+      //   e = e || window.event;
+      //   e = jQuery.event.fix(e);
+      // console.log('client: (' + e.clientX + ',' + e.clientY + ')\noffset: (' + e.offsetX + ',' + e.offsetY + ')\npage: (' + e.pageX + ',' + e.pageY + ')\nscreen: (' + e.screenX + ',' + e.screenY + ')\n');
+    });
+
     // bind the enter key for submission
     $(document).keypress(function(e) {
+      // Enter
       if (e.which == 13) {
         submitBtn.click();
       }
+      // Spacebar
+      if (e.which == 32) {
+        clearTags();
+      }
+      // c or C
+      if (e.which == 99 || e.which == 67) {
+        //console.log('Opening connection to ' + wsurl);
+      }
+      console.log('pressed ' + e.which);
     });
 
   }
