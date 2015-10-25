@@ -91,10 +91,10 @@ window.onload = function createWebSocket() {
           switch (msg.proto) {
             case "add_user_cords":
               // // set the offset
-              var tmp = isFree;
-              isFree = true;
+              // var tmp = isFree;
+              // isFree = true;
               placePoint(msg.data.cords.x, msg.data.cords.y);
-              ifFree = tmp;
+              // ifFree = tmp;
               // update the color
               $('.marker-user:last').css('color', 'red');
               $('.tags').hide().show();
@@ -115,7 +115,7 @@ window.onload = function createWebSocket() {
               $('#image-set').find('i.fa').text(' Image ' + imgSet);
               $('#wait-state').hide();
               isFree = true;
-              console.log('reset');
+              console.log('>> Sending reset');
               break;
 
             default:
@@ -206,19 +206,28 @@ window.onload = function createWebSocket() {
         submitBtn.click();
       }
       // Spacebar
-      if (e.which == 32) {
-        $('.atags').remove();
-        return false;
+      //if (e.which == 32) {
+      //  $('.atags').remove();
+      //  return false;
+      //}
+      
+      // > + nextEn
+      if(e.which == 62 && nextEn == true) {
+          if (webSock) {
+              var msg = new Msg('send_out_points', imgSet, commRealm);
+              webSock.send(JSON.stringify(msg));
+              console.log('Sending out all points');
+          }
       }
 
-      // ? + nextEn
-      if (e.which == 63 && nextEn == true) {
+      // n + nextEn
+      if (e.which == 110 && nextEn == true) {
         // reset everyone's screen for next image
         if (webSock) {
           // construct a message object, placing the data as the payload
           imgSet = imgSet + 1;
           var msg = new Msg('request_next_set', imgSet, commRealm);
-          isFree = true;
+          // isFree = true;
           // Send the msg object as a JSON-formatted string.
           webSock.send(JSON.stringify(msg));
           console.log('Resetting realm');
@@ -246,7 +255,7 @@ window.onload = function createWebSocket() {
         nextEn = false;
       }
 
-      console.log(nextEn);
+//      console.log(nextEn);
     });
 
   }
