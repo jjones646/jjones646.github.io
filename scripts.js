@@ -39,9 +39,7 @@ window.onload = function createWebSocket() {
 
     // setup the websocket connection
     var wsurl = "ws://104.131.13.159:5000";
-    // var wsurl = "ws://localhost:5000";
-    //get status element
-    // var connstatus = document.getElementById('connstatus');
+    //get clickable elements
     var submitBtn = document.getElementById('submit-btn');
     var clickArea = document.getElementById('point-wrap');
     // the default realm for our protocol

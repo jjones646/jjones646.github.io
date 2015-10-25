@@ -10,7 +10,7 @@
     /*height: 100%;*/
     width: 100%;
     /*filter: brightness(50%);*/
-    /*position: absolute;*/
+    position: relative;
     -webkit-filter: brightness(150%);
 }
 
@@ -21,7 +21,7 @@
 
 i .fa {
 	text-shadow: 0 0 3px #FFFAF0;
-	position: relative;
+	position: absolute;
 }
 
 #num-users > .fa-user {
