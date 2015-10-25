@@ -91,7 +91,10 @@ window.onload = function createWebSocket() {
           switch (msg.proto) {
             case "add_user_cords":
               // // set the offset
+              var tmp = isFree;
+              isFree = true;
               placePoint(msg.data.cords.x, msg.data.cords.y);
+              ifFree = tmp;
               // update the color
               $('.marker-user:last').css('color', 'red');
               $('.tags').hide().show();
