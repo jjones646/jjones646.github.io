@@ -32,8 +32,20 @@
                 <input type="button" id="submit-btn" value="Submit" />
             </form>
             <div id="connstatus">
-                <i class="fa fa-circle"> Not Connected</i>
-                <div id="num-users"><i class="fa fa-user"></i></div>
+                <ul style="list-style-type:none">
+                    <li>
+                        <div id="connstate" class="fa"><i class="fa fa-circle"> Not Connected</i></div>
+                    </li>
+                    <li>
+                        <div id="num-users" class="fa"><i class="fa fa-user"></i></div>
+                    </li>
+                    <li>
+                        <div id="image-set" class="fa"><i class="fa fa-map-pin"></i></div>
+                    </li>
+                    <li>
+                        <div id="wait-state" class="fa"><i class="fa fa-circle-o-notch fa-spin"></i> Waiting for others</div>
+                    </li>
+                </ul>
             </div>
         </div>
     </div>

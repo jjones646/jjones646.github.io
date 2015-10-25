@@ -1,6 +1,7 @@
 var isFree = true;
 var attempts = 1;
-var image_set = 0;
+var imgSet = 1;
+var nextEn = false;
 
 function placePoint(x, y) {
   var aTags = $('div.tags');
@@ -16,7 +17,6 @@ function placePoint(x, y) {
 
   // compute our offset for the correct placement
   var offset = $('#point-wrap').position();
-  console.log(offset);
   var imgB = document.getElementById('point-wrap');
   var xx = Math.round(x - imgB.offsetLeft + offset.left);
   var yy = Math.round(y - imgB.offsetTop + offset.top);
@@ -44,6 +44,8 @@ window.onload = function createWebSocket() {
     //If the user's browser does not support WebSockets, give an alert message
     alert("Your browser does not support the WebSocket API!");
   } else {
+
+    $('#image-set').find('i.fa').text(' Image ' + imgSet);
 
     // setup the websocket connection
     var wsurl = "ws://104.131.13.159:5000";
@@ -87,9 +89,6 @@ window.onload = function createWebSocket() {
 
           // handle the corresponding event
           switch (msg.proto) {
-            case "submit_cords":
-              break;
-
             case "add_user_cords":
               // // set the offset
               placePoint(msg.data.cords.x, msg.data.cords.y);
@@ -99,11 +98,21 @@ window.onload = function createWebSocket() {
               break;
 
             case "renew_num_clients":
-              $('#num-users').find('i.fa-user').text(' ' + msg.data + ' current users');
+              $('#num-users').find('i.fa-user').text(' ' + msg.data + ' current users').hide().show();
               break;
 
             case "clear_points":
               $('div.atags').remove()
+              break;
+
+            case "reset_set":
+              $('div.atags').remove();
+              imgSet = msg.data;
+              $('div.tags').find('i.marker:first').removeClass('marked').hide().show();
+              $('#image-set').find('i.fa').text(' Image ' + imgSet);
+              $('#wait-state').hide();
+              isFree = true;
+              console.log('reset');
               break;
 
             default:
@@ -134,20 +143,22 @@ window.onload = function createWebSocket() {
       if ($('#form_x').val() != null && $('#form_y').val() != null) {
         if (webSock) {
           // check to see if the websocket object exists
-          $('.marker:first').css('color', '#00FF00');
+          // $('.marker:first').css('color', 'blue');
+          $('.marker:first').addClass('marked');
           // create our data object to send
           var data = {
             cords: {
               x: $('#form_x').val(),
               y: $('#form_y').val()
             },
-            set: image_set
+            set: imgSet
           };
           // construct a message object, placing the data as the payload
           var msg = new Msg('submit_cords', data, commRealm);
           // Send the msg object as a JSON-formatted string.
           webSock.send(JSON.stringify(msg));
-          // isFree = false;
+          isFree = false;
+          $('#wait-state').show();
         } else {
           console.log("No socket connection");
         }
@@ -196,17 +207,43 @@ window.onload = function createWebSocket() {
         $('.atags').remove();
         return false;
       }
-      // p or P
-      if (e.which == 80 || e.which == 112) {
+
+      // ? + nextEn
+      if (e.which == 63 && nextEn == true) {
+        // reset everyone's screen for next image
+        if (webSock) {
+          // construct a message object, placing the data as the payload
+          imgSet = imgSet + 1;
+          var msg = new Msg('request_next_set', imgSet, commRealm);
+          isFree = true;
+          // Send the msg object as a JSON-formatted string.
+          webSock.send(JSON.stringify(msg));
+          console.log('Resetting realm');
+        }
+      }
+
+      // ^ + nextEn
+      if (e.which == 94 && nextEn == true) {
         for (i = 0; i < 200; ++i) {
           var x = Math.floor(Math.random() * $('img').width());
           var y = Math.floor(Math.random() * $('img').height());
           $('#form_x').val(x);
           $('#form_y').val(y);
           placePoint(x, y);
+
           $('#submit-btn').trigger("click");
         }
       }
+
+      // n + shift + alt = enable nextEn state
+      if (e.which == 78) {
+        nextEn = true;
+        console.log('mode enabled');
+      } else {
+        nextEn = false;
+      }
+
+      console.log(nextEn);
     });
 
   }
